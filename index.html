@@ -545,20 +545,32 @@
         const resultsSection = document.getElementById('resultsSection');
         
         let audioFile = null;
-
-        // Click to upload
-        uploadArea.addEventListener('click', () => fileInput.click());
-
+        
+        // Debug logs
+        console.log('Elements found:', {
+            uploadArea: !!uploadArea,
+            fileInput: !!fileInput,
+            audioPlayer: !!audioPlayer
+        });
+        
+        // Click to upload - handle the entire area
+        uploadArea.addEventListener('click', (e) => {
+            console.log('Upload area clicked');
+            e.preventDefault();
+            e.stopPropagation();
+            fileInput.click();
+        });
+        
         // Drag and drop
         uploadArea.addEventListener('dragover', (e) => {
             e.preventDefault();
             uploadArea.classList.add('dragover');
         });
-
+        
         uploadArea.addEventListener('dragleave', () => {
             uploadArea.classList.remove('dragover');
         });
-
+        
         uploadArea.addEventListener('drop', (e) => {
             e.preventDefault();
             uploadArea.classList.remove('dragover');
@@ -567,14 +579,14 @@
                 handleFile(files[0]);
             }
         });
-
-        // File input change
+        
+        // File input change - THIS IS CRITICAL
         fileInput.addEventListener('change', (e) => {
+            console.log('File input changed:', e.target.files);
             if (e.target.files.length > 0) {
                 handleFile(e.target.files[0]);
             }
         });
-
         // Handle file upload
         function handleFile(file) {
             if (!file.type.startsWith('audio/')) {
