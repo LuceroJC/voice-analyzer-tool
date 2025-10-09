@@ -607,35 +607,36 @@
 
         // Analysis Function 
         async function analyzeVoice() {
-        analyzeButton.disabled = true;
-        loadingSection.style.display = 'block';
-        resultsSection.style.display = 'none';
-
-        try {
-            const formData = new FormData();
-            formData.append('file', audioFile);
-
-            // Replace with your Render URL
-            const response = await fetch(https://voice-analyzer-api.onrender.com', {
-                method: 'POST',
-                body: formData
-            });
-
-            if (!response.ok) {
-                throw new Error('Analysis failed');
+            analyzeButton.disabled = true;
+            loadingSection.style.display = 'block';
+            resultsSection.style.display = 'none';
+        
+            try {
+                const formData = new FormData();
+                formData.append('file', audioFile);
+        
+                // Replace with your actual Render URL
+                const response = await fetch('https://voice-analyzer-api.onrender.com/analyze', {
+                    method: 'POST',
+                    body: formData
+                });
+        
+                if (!response.ok) {
+                    throw new Error('Analysis failed');
+                }
+        
+                const data = await response.json();
+                displayRealResults(data);
+                
+            } catch (error) {
+                console.error('Analysis error:', error);
+                alert('Analysis error: ' + error.message);
+            } finally {
+                loadingSection.style.display = 'none';
+                resultsSection.style.display = 'block';
+                analyzeButton.disabled = false;
             }
-
-            const data = await response.json();
-            displayRealResults(data);
-            
-        } catch (error) {
-            alert('Analysis error: ' + error.message);
-        } finally {
-            loadingSection.style.display = 'none';
-            resultsSection.style.display = 'block';
-            analyzeButton.disabled = false;
         }
-    }
 
     function displayRealResults(data) {
         // F0
