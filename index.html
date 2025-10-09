@@ -1,0 +1,877 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Free Voice Analyzer - Instant Acoustic Analysis</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --bg: #f9fafb;
+            --white: #ffffff;
+            --text: #1f2937;
+            --text-light: #6b7280;
+            --border: #e5e7eb;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+
+        /* Header */
+        .header {
+            background: var(--white);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            color: var(--primary);
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+        }
+
+        .nav-links a {
+            color: var(--text);
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        .nav-links a:hover {
+            color: var(--primary);
+        }
+
+        /* Main Container */
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 20px;
+        }
+
+        /* Tool Header */
+        .tool-header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .tool-header h1 {
+            font-size: 2.5rem;
+            color: var(--text);
+            margin-bottom: 0.5rem;
+        }
+
+        .tool-header p {
+            color: var(--text-light);
+            font-size: 1.1rem;
+        }
+
+        /* Upload Section */
+        .upload-section {
+            background: var(--white);
+            border-radius: 12px;
+            padding: 3rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .upload-area {
+            border: 2px dashed var(--border);
+            border-radius: 8px;
+            padding: 3rem;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .upload-area:hover, .upload-area.dragover {
+            border-color: var(--primary);
+            background: rgba(99, 102, 241, 0.05);
+        }
+
+        .upload-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .upload-button {
+            background: var(--primary);
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 6px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .upload-button:hover {
+            background: var(--primary-dark);
+        }
+
+        /* Audio Player */
+        .audio-player {
+            margin-top: 2rem;
+            display: none;
+        }
+
+        audio {
+            width: 100%;
+            margin-top: 1rem;
+        }
+
+        /* Analysis Button */
+        .analyze-button {
+            background: var(--success);
+            color: white;
+            padding: 15px 40px;
+            border: none;
+            border-radius: 6px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            margin-top: 1rem;
+            display: none;
+            transition: background 0.3s;
+        }
+
+        .analyze-button:hover {
+            background: #059669;
+        }
+
+        .analyze-button:disabled {
+            background: var(--text-light);
+            cursor: not-allowed;
+        }
+
+        /* Loading Spinner */
+        .loading {
+            display: none;
+            text-align: center;
+            margin: 2rem 0;
+        }
+
+        .spinner {
+            border: 3px solid var(--border);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Results Section */
+        .results-section {
+            display: none;
+            animation: fadeIn 0.5s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .result-card {
+            background: var(--white);
+            border-radius: 8px;
+            padding: 1.5rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .result-label {
+            color: var(--text-light);
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .result-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--text);
+        }
+
+        .result-unit {
+            font-size: 1rem;
+            color: var(--text-light);
+            margin-left: 0.25rem;
+        }
+
+        .result-status {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            margin-top: 0.5rem;
+        }
+
+        .status-normal {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success);
+        }
+
+        .status-warning {
+            background: rgba(245, 158, 11, 0.1);
+            color: var(--warning);
+        }
+
+        .status-concern {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger);
+        }
+
+        /* Interpretation Section */
+        .interpretation {
+            background: var(--white);
+            border-radius: 8px;
+            padding: 2rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+
+        .interpretation h2 {
+            margin-bottom: 1rem;
+            color: var(--text);
+        }
+
+        .interpretation-text {
+            color: var(--text-light);
+            line-height: 1.8;
+        }
+
+        .interpretation-list {
+            list-style: none;
+            margin-top: 1rem;
+        }
+
+        .interpretation-list li {
+            padding: 0.5rem 0;
+            display: flex;
+            align-items: start;
+        }
+
+        .interpretation-list li::before {
+            content: "→";
+            color: var(--primary);
+            margin-right: 0.75rem;
+            font-weight: bold;
+        }
+
+        /* Action Buttons */
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-top: 2rem;
+        }
+
+        .button {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 6px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .button-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .button-primary:hover {
+            background: var(--primary-dark);
+        }
+
+        .button-secondary {
+            background: var(--white);
+            color: var(--text);
+            border: 1px solid var(--border);
+        }
+
+        .button-secondary:hover {
+            background: var(--bg);
+        }
+
+        /* Footer Feedback */
+        .feedback-section {
+            background: var(--white);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-top: 3rem;
+            text-align: center;
+        }
+
+        .feedback-section h3 {
+            margin-bottom: 1rem;
+        }
+
+        .star-rating {
+            display: flex;
+            justify-content: center;
+            gap: 0.5rem;
+            margin: 1rem 0;
+        }
+
+        .star {
+            font-size: 2rem;
+            color: var(--border);
+            cursor: pointer;
+            transition: color 0.3s;
+        }
+
+        .star:hover, .star.active {
+            color: #fbbf24;
+        }
+
+        .feedback-input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            margin-top: 1rem;
+            font-family: inherit;
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .tool-header h1 {
+                font-size: 2rem;
+            }
+
+            .results-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .nav-links {
+                display: none;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+            }
+
+            .button {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">🎙️ VoiceFlow Tools</div>
+            <nav class="nav-links">
+                <a href="/">Home</a>
+                <a href="#tools">Tools</a>
+                <a href="#about">About</a>
+                <a href="#contact">Contact</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <div class="container">
+        <!-- Tool Header -->
+        <div class="tool-header">
+            <h1>Quick Voice Analyzer</h1>
+            <p>Upload a voice recording to get instant acoustic measurements</p>
+        </div>
+
+        <!-- Upload Section -->
+        <div class="upload-section">
+            <div class="upload-area" id="uploadArea">
+                <div class="upload-icon">📁</div>
+                <h2>Upload Voice Recording</h2>
+                <p>Drag & drop your audio file here, or click to browse</p>
+                <p style="margin-top: 1rem; color: var(--text-light); font-size: 0.9rem;">
+                    Supports: WAV, MP3, M4A (Max 50MB)
+                </p>
+                <input type="file" id="fileInput" class="file-input" accept="audio/*">
+                <button class="upload-button" style="margin-top: 1rem;">Choose File</button>
+            </div>
+
+            <div class="audio-player" id="audioPlayer">
+                <h3>Your Recording:</h3>
+                <audio id="audioElement" controls></audio>
+                <button class="analyze-button" id="analyzeButton">
+                    🔬 Analyze Voice
+                </button>
+            </div>
+        </div>
+
+        <!-- Loading State -->
+        <div class="loading" id="loadingSection">
+            <div class="spinner"></div>
+            <p style="margin-top: 1rem;">Analyzing voice parameters...</p>
+            <p style="color: var(--text-light); font-size: 0.9rem;">This usually takes 10-20 seconds</p>
+        </div>
+
+        <!-- Results Section -->
+        <div class="results-section" id="resultsSection">
+            <h2 style="text-align: center; margin-bottom: 2rem;">Analysis Results</h2>
+            
+            <!-- Results Grid -->
+            <div class="results-grid" id="resultsGrid">
+                <!-- F0 -->
+                <div class="result-card">
+                    <div class="result-label">Fundamental Frequency (F0)</div>
+                    <div class="result-value" id="f0Value">
+                        --<span class="result-unit">Hz</span>
+                    </div>
+                    <div class="result-status status-normal" id="f0Status">Loading...</div>
+                </div>
+
+                <!-- Jitter -->
+                <div class="result-card">
+                    <div class="result-label">Jitter</div>
+                    <div class="result-value" id="jitterValue">
+                        --<span class="result-unit">%</span>
+                    </div>
+                    <div class="result-status status-normal" id="jitterStatus">Loading...</div>
+                </div>
+
+                <!-- Shimmer -->
+                <div class="result-card">
+                    <div class="result-label">Shimmer</div>
+                    <div class="result-value" id="shimmerValue">
+                        --<span class="result-unit">%</span>
+                    </div>
+                    <div class="result-status status-normal" id="shimmerStatus">Loading...</div>
+                </div>
+
+                <!-- HNR -->
+                <div class="result-card">
+                    <div class="result-label">Harmonics-to-Noise Ratio</div>
+                    <div class="result-value" id="hnrValue">
+                        --<span class="result-unit">dB</span>
+                    </div>
+                    <div class="result-status status-normal" id="hnrStatus">Loading...</div>
+                </div>
+            </div>
+
+            <!-- Clinical Interpretation -->
+            <div class="interpretation">
+                <h2>Clinical Interpretation</h2>
+                <div class="interpretation-text" id="interpretationText">
+                    <p>Analysis complete. Based on the acoustic parameters:</p>
+                    <ul class="interpretation-list" id="interpretationList">
+                        <!-- Dynamically populated -->
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="action-buttons">
+                <button class="button button-primary" onclick="downloadPDF()">
+                    📄 Download PDF Report
+                </button>
+                <button class="button button-secondary" onclick="analyzeAnother()">
+                    🔄 Analyze Another Recording
+                </button>
+            </div>
+        </div>
+
+        <!-- Feedback Section -->
+        <div class="feedback-section">
+            <h3>Help improve this tool</h3>
+            <p style="color: var(--text-light);">How useful was this analysis?</p>
+            <div class="star-rating">
+                <span class="star" data-rating="1">⭐</span>
+                <span class="star" data-rating="2">⭐</span>
+                <span class="star" data-rating="3">⭐</span>
+                <span class="star" data-rating="4">⭐</span>
+                <span class="star" data-rating="5">⭐</span>
+            </div>
+            <input type="text" class="feedback-input" placeholder="What feature would you add? (optional)">
+            <button class="button button-primary" style="margin-top: 1rem;">Submit Feedback</button>
+        </div>
+    </div>
+
+    <script>
+        // File Upload Handling
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+        const audioPlayer = document.getElementById('audioPlayer');
+        const audioElement = document.getElementById('audioElement');
+        const analyzeButton = document.getElementById('analyzeButton');
+        const loadingSection = document.getElementById('loadingSection');
+        const resultsSection = document.getElementById('resultsSection');
+        
+        let audioFile = null;
+
+        // Click to upload
+        uploadArea.addEventListener('click', () => fileInput.click());
+
+        // Drag and drop
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                handleFile(files[0]);
+            }
+        });
+
+        // File input change
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                handleFile(e.target.files[0]);
+            }
+        });
+
+        // Handle file upload
+        function handleFile(file) {
+            if (!file.type.startsWith('audio/')) {
+                alert('Please upload an audio file');
+                return;
+            }
+
+            if (file.size > 50 * 1024 * 1024) {
+                alert('File size must be less than 50MB');
+                return;
+            }
+
+            audioFile = file;
+            const url = URL.createObjectURL(file);
+            audioElement.src = url;
+            audioPlayer.style.display = 'block';
+            analyzeButton.style.display = 'inline-block';
+            
+            // Update upload area text
+            uploadArea.innerHTML = `
+                <div class="upload-icon">✓</div>
+                <h3>${file.name}</h3>
+                <p>File uploaded successfully</p>
+                <button class="upload-button" style="margin-top: 1rem;">Choose Different File</button>
+            `;
+        }
+
+        // Analyze button click
+        analyzeButton.addEventListener('click', analyzeVoice);
+
+        // Analysis Function 
+        async function analyzeVoice() {
+        analyzeButton.disabled = true;
+        loadingSection.style.display = 'block';
+        resultsSection.style.display = 'none';
+
+        try {
+            const formData = new FormData();
+            formData.append('file', audioFile);
+
+            // Replace with your Render URL
+            const response = await fetch(https://voice-analyzer-api.onrender.com/analyze', {
+                method: 'POST',
+                body: formData
+            });
+
+            if (!response.ok) {
+                throw new Error('Analysis failed');
+            }
+
+            const data = await response.json();
+            displayRealResults(data);
+            
+        } catch (error) {
+            alert('Analysis error: ' + error.message);
+        } finally {
+            loadingSection.style.display = 'none';
+            resultsSection.style.display = 'block';
+            analyzeButton.disabled = false;
+        }
+    }
+
+    function displayRealResults(data) {
+        // F0
+        document.getElementById('f0Value').innerHTML = 
+            `${data.f0.mean.toFixed(1)}<span class="result-unit">Hz</span>`;
+        document.getElementById('f0Status').textContent = data.f0.status;
+        
+        // Jitter
+        document.getElementById('jitterValue').innerHTML = 
+            `${data.jitter.percent.toFixed(2)}<span class="result-unit">%</span>`;
+        document.getElementById('jitterStatus').textContent = data.jitter.status;
+        
+        // Shimmer
+        document.getElementById('shimmerValue').innerHTML = 
+            `${data.shimmer.percent.toFixed(2)}<span class="result-unit">%</span>`;
+        document.getElementById('shimmerStatus').textContent = data.shimmer.status;
+        
+        // HNR
+        document.getElementById('hnrValue').innerHTML = 
+            `${data.hnr.mean.toFixed(1)}<span class="result-unit">dB</span>`;
+        document.getElementById('hnrStatus').textContent = data.hnr.status;
+        
+        // Interpretation
+        const list = document.getElementById('interpretationList');
+        list.innerHTML = '';
+        
+        // Add overall assessment
+        const overall = document.createElement('li');
+        overall.textContent = data.interpretation.overall_assessment;
+        list.appendChild(overall);
+        
+        // Add concerns
+        data.interpretation.concerns.forEach(concern => {
+            const li = document.createElement('li');
+            li.textContent = concern;
+            list.appendChild(li);
+        });
+        
+        // Add recommendations
+        data.interpretation.recommendations.forEach(rec => {
+            const li = document.createElement('li');
+            li.textContent = rec;
+            list.appendChild(li);
+        });
+    }
+        // Generate mock results (replace with real analysis)
+        function generateMockResults() {
+            return {
+                f0: {
+                    value: 125 + Math.random() * 100,
+                    unit: 'Hz'
+                },
+                jitter: {
+                    value: Math.random() * 2,
+                    unit: '%'
+                },
+                shimmer: {
+                    value: Math.random() * 5,
+                    unit: '%'
+                },
+                hnr: {
+                    value: 15 + Math.random() * 15,
+                    unit: 'dB'
+                }
+            };
+        }
+
+        // Display results
+        function displayResults(results) {
+            // F0
+            const f0Val = results.f0.value;
+            document.getElementById('f0Value').innerHTML = 
+                `${f0Val.toFixed(1)}<span class="result-unit">Hz</span>`;
+            
+            let f0Status = 'Normal';
+            let f0Class = 'status-normal';
+            if (f0Val < 85) {
+                f0Status = 'Low';
+                f0Class = 'status-warning';
+            } else if (f0Val > 255) {
+                f0Status = 'High';
+                f0Class = 'status-warning';
+            }
+            const f0StatusEl = document.getElementById('f0Status');
+            f0StatusEl.textContent = f0Status;
+            f0StatusEl.className = `result-status ${f0Class}`;
+
+            // Jitter
+            const jitterVal = results.jitter.value;
+            document.getElementById('jitterValue').innerHTML = 
+                `${jitterVal.toFixed(2)}<span class="result-unit">%</span>`;
+            
+            let jitterStatus = 'Normal';
+            let jitterClass = 'status-normal';
+            if (jitterVal > 1.0 && jitterVal < 2.0) {
+                jitterStatus = 'Slightly elevated';
+                jitterClass = 'status-warning';
+            } else if (jitterVal >= 2.0) {
+                jitterStatus = 'Elevated';
+                jitterClass = 'status-concern';
+            }
+            const jitterStatusEl = document.getElementById('jitterStatus');
+            jitterStatusEl.textContent = jitterStatus;
+            jitterStatusEl.className = `result-status ${jitterClass}`;
+
+            // Shimmer
+            const shimmerVal = results.shimmer.value;
+            document.getElementById('shimmerValue').innerHTML = 
+                `${shimmerVal.toFixed(2)}<span class="result-unit">%</span>`;
+            
+            let shimmerStatus = 'Normal';
+            let shimmerClass = 'status-normal';
+            if (shimmerVal > 3.0 && shimmerVal < 5.0) {
+                shimmerStatus = 'Slightly elevated';
+                shimmerClass = 'status-warning';
+            } else if (shimmerVal >= 5.0) {
+                shimmerStatus = 'Elevated';
+                shimmerClass = 'status-concern';
+            }
+            const shimmerStatusEl = document.getElementById('shimmerStatus');
+            shimmerStatusEl.textContent = shimmerStatus;
+            shimmerStatusEl.className = `result-status ${shimmerClass}`;
+
+            // HNR
+            const hnrVal = results.hnr.value;
+            document.getElementById('hnrValue').innerHTML = 
+                `${hnrVal.toFixed(1)}<span class="result-unit">dB</span>`;
+            
+            let hnrStatus = 'Good';
+            let hnrClass = 'status-normal';
+            if (hnrVal < 15) {
+                hnrStatus = 'Reduced';
+                hnrClass = 'status-concern';
+            } else if (hnrVal < 20) {
+                hnrStatus = 'Mild reduction';
+                hnrClass = 'status-warning';
+            }
+            const hnrStatusEl = document.getElementById('hnrStatus');
+            hnrStatusEl.textContent = hnrStatus;
+            hnrStatusEl.className = `result-status ${hnrClass}`;
+
+            // Generate interpretation
+            generateInterpretation(results);
+        }
+
+        // Generate clinical interpretation
+        function generateInterpretation(results) {
+            const list = document.getElementById('interpretationList');
+            list.innerHTML = '';
+            
+            const interpretations = [];
+
+            // F0 interpretation
+            if (results.f0.value < 85) {
+                interpretations.push('Very low fundamental frequency may indicate vocal fold pathology or excessive mass');
+            } else if (results.f0.value > 255) {
+                interpretations.push('Elevated fundamental frequency may indicate increased tension or strain');
+            } else {
+                interpretations.push('Fundamental frequency is within normal range');
+            }
+
+            // Jitter interpretation
+            if (results.jitter.value > 1.0) {
+                interpretations.push('Elevated jitter suggests irregular vocal fold vibration');
+            }
+
+            // Shimmer interpretation
+            if (results.shimmer.value > 3.0) {
+                interpretations.push('Elevated shimmer indicates amplitude instability in phonation');
+            }
+
+            // HNR interpretation
+            if (results.hnr.value < 20) {
+                interpretations.push('Reduced harmonics-to-noise ratio suggests increased breathiness or roughness');
+            }
+
+            // Overall assessment
+            const concerns = [];
+            if (results.jitter.value > 1.0) concerns.push('jitter');
+            if (results.shimmer.value > 3.0) concerns.push('shimmer');
+            if (results.hnr.value < 20) concerns.push('HNR');
+            
+            if (concerns.length === 0) {
+                interpretations.push('Overall voice quality appears within normal limits');
+            } else if (concerns.length === 1) {
+                interpretations.push('Mild voice quality concerns noted - consider monitoring');
+            } else {
+                interpretations.push('Multiple acoustic parameters suggest voice disorder - comprehensive evaluation recommended');
+            }
+
+            // Add to list
+            interpretations.forEach(text => {
+                const li = document.createElement('li');
+                li.textContent = text;
+                list.appendChild(li);
+            });
+        }
+
+        // Download PDF (mock function)
+        function downloadPDF() {
+            alert('PDF download will be implemented with backend integration. For now, you can print this page to PDF.');
+            window.print();
+        }
+
+        // Analyze another recording
+        function analyzeAnother() {
+            // Reset the interface
+            audioPlayer.style.display = 'none';
+            resultsSection.style.display = 'none';
+            audioFile = null;
+            audioElement.src = '';
+            fileInput.value = '';
+            
+            uploadArea.innerHTML = `
+                <div class="upload-icon">📁</div>
+                <h2>Upload Voice Recording</h2>
+                <p>Drag & drop your audio file here, or click to browse</p>
+                <p style="margin-top: 1rem; color: var(--text-light); font-size: 0.9rem;">
+                    Supports: WAV, MP3, M4A (Max 50MB)
+                </p>
+                <button class="upload-button" style="margin-top: 1rem;">Choose File</button>
+            `;
+            
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // Star rating
+        document.querySelectorAll('.star').forEach(star => {
+            star.addEventListener('click', function() {
+                const rating = this.getAttribute('data-rating');
+                document.querySelectorAll('.star').forEach((s, index) => {
+                    if (index < rating) {
+                        s.classList.add('active');
+                    } else {
+                        s.classList.remove('active');
+                    }
+                });
+            });
+        });
