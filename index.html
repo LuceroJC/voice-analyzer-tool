@@ -429,7 +429,7 @@
         <div class="loading" id="loadingSection">
             <div class="spinner"></div>
             <p style="margin-top: 1rem;">Analyzing voice parameters...</p>
-            <p style="color: var(--text-light); font-size: 0.9rem;">This usually takes 10-20 seconds</p>
+            <p style="color: var(--text-light); font-size: 0.9rem;">This usually takes 1-2 minutes</p>
         </div>
 
         <div class="results-section" id="resultsSection">
@@ -499,7 +499,7 @@
                 <span class="star" data-rating="5">⭐</span>
             </div>
             <input type="text" class="feedback-input" placeholder="What feature would you add? (optional)">
-            <button class="button button-primary" style="margin-top: 1rem;">Submit Feedback</button>
+            <button class="button button-primary" style="margin-top: 1rem;" id="submitFeedbackBtn">Submit Feedback</button>
         </div>
     </div>
 
@@ -513,6 +513,7 @@
         const resultsSection = document.getElementById('resultsSection');
         
         let audioFile = null;
+        let currentAnalysisResults = null;
 
         // Click to upload
         uploadArea.addEventListener('click', (e) => {
@@ -570,7 +571,7 @@
                 <div class="upload-icon">✓</div>
                 <h3>${file.name}</h3>
                 <p>File uploaded successfully</p>
-                <button class="upload-button" style="margin-top: 1rem;" onclick="fileInput.click()">Choose Different File</button>
+                <button class="upload-button" style="margin-top: 1rem;" onclick="document.getElementById('fileInput').click()">Choose Different File</button>
             `;
         }
 
@@ -615,22 +616,22 @@
             document.getElementById('f0Value').innerHTML = 
                 `${data.f0.mean.toFixed(1)}<span class="result-unit">Hz</span>`;
             document.getElementById('f0Status').textContent = data.f0.status;
-            document.getElementById('f0Status').className = `result-status status-${data.f0.status.toLowerCase()}`;
+            document.getElementById('f0Status').className = `result-status status-normal`;
             
             document.getElementById('jitterValue').innerHTML = 
                 `${data.jitter.percent.toFixed(2)}<span class="result-unit">%</span>`;
             document.getElementById('jitterStatus').textContent = data.jitter.status;
-            document.getElementById('jitterStatus').className = `result-status status-${data.jitter.status.toLowerCase()}`;
+            document.getElementById('jitterStatus').className = `result-status status-normal`;
             
             document.getElementById('shimmerValue').innerHTML = 
                 `${data.shimmer.percent.toFixed(2)}<span class="result-unit">%</span>`;
             document.getElementById('shimmerStatus').textContent = data.shimmer.status;
-            document.getElementById('shimmerStatus').className = `result-status status-${data.shimmer.status.toLowerCase()}`;
+            document.getElementById('shimmerStatus').className = `result-status status-normal`;
             
             document.getElementById('hnrValue').innerHTML = 
                 `${data.hnr.mean.toFixed(1)}<span class="result-unit">dB</span>`;
             document.getElementById('hnrStatus').textContent = data.hnr.status;
-            document.getElementById('hnrStatus').className = `result-status status-${data.hnr.status.toLowerCase()}`;
+            document.getElementById('hnrStatus').className = `result-status status-normal`;
             
             const list = document.getElementById('interpretationList');
             list.innerHTML = '';
@@ -639,56 +640,22 @@
             overall.textContent = data.interpretation.overall_assessment;
             list.appendChild(overall);
             
-            data.interpretation.concerns.forEach(concern => {
-                const li = document.createElement('li');
-                li.textContent = concern;
-                list.appendChild(li);
-            });
+            if (data.interpretation.concerns) {
+                data.interpretation.concerns.forEach(concern => {
+                    const li = document.createElement('li');
+                    li.textContent = concern;
+                    list.appendChild(li);
+                });
+            }
             
-            data.interpretation.recommendations.forEach(rec => {
-                const li = document.createElement('li');
-                li.textContent = rec;
-                list.appendChild(li);
-            });
-        }.status;
-            document.getElementById('f0Status').className = `result-status status-${data.f0.status.toLowerCase()}`;
-            
-            document.getElementById('jitterValue').innerHTML = 
-                `${data.jitter.percent.toFixed(2)}<span class="result-unit">%</span>`;
-            document.getElementById('jitterStatus').textContent = data.jitter.status;
-            document.getElementById('jitterStatus').className = `result-status status-${data.jitter.status.toLowerCase()}`;
-            
-            document.getElementById('shimmerValue').innerHTML = 
-                `${data.shimmer.percent.toFixed(2)}<span class="result-unit">%</span>`;
-            document.getElementById('shimmerStatus').textContent = data.shimmer.status;
-            document.getElementById('shimmerStatus').className = `result-status status-${data.shimmer.status.toLowerCase()}`;
-            
-            document.getElementById('hnrValue').innerHTML = 
-                `${data.hnr.mean.toFixed(1)}<span class="result-unit">dB</span>`;
-            document.getElementById('hnrStatus').textContent = data.hnr.status;
-            document.getElementById('hnrStatus').className = `result-status status-${data.hnr.status.toLowerCase()}`;
-            
-            const list = document.getElementById('interpretationList');
-            list.innerHTML = '';
-            
-            const overall = document.createElement('li');
-            overall.textContent = data.interpretation.overall_assessment;
-            list.appendChild(overall);
-            
-            data.interpretation.concerns.forEach(concern => {
-                const li = document.createElement('li');
-                li.textContent = concern;
-                list.appendChild(li);
-            });
-            
-            data.interpretation.recommendations.forEach(rec => {
-                const li = document.createElement('li');
-                li.textContent = rec;
-                list.appendChild(li);
-            });
+            if (data.interpretation.recommendations) {
+                data.interpretation.recommendations.forEach(rec => {
+                    const li = document.createElement('li');
+                    li.textContent = rec;
+                    list.appendChild(li);
+                });
+            }
         }
-
-        let currentAnalysisResults = null;
 
         async function downloadPDF() {
             if (!currentAnalysisResults) {
@@ -704,11 +671,7 @@
                     },
                     body: JSON.stringify({
                         analysis_results: currentAnalysisResults,
-                        patient_info: {
-                            // Optional: Add patient info if you want
-                            // patient_id: 'P12345',
-                            // date: new Date().toLocaleDateString()
-                        }
+                        patient_info: {}
                     })
                 });
 
@@ -716,7 +679,6 @@
                     throw new Error('PDF generation failed');
                 }
 
-                // Download the PDF
                 const blob = await response.blob();
                 const url = window.URL.createObjectURL(blob);
                 const a = document.createElement('a');
@@ -738,6 +700,7 @@
             audioPlayer.style.display = 'none';
             resultsSection.style.display = 'none';
             audioFile = null;
+            currentAnalysisResults = null;
             audioElement.src = '';
             fileInput.value = '';
             
@@ -771,7 +734,7 @@
         });
 
         // Submit feedback
-        document.querySelector('.feedback-section .button-primary').addEventListener('click', async function() {
+        document.getElementById('submitFeedbackBtn').addEventListener('click', async function() {
             if (selectedRating === 0) {
                 alert('Please select a rating before submitting feedback');
                 return;
@@ -800,7 +763,6 @@
                 const result = await response.json();
                 console.log('Feedback submitted:', result);
 
-                // Show success message
                 alert('Thank you for your feedback! Your input helps us improve VoiceFlow Tools.');
 
                 // Reset form
