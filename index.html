@@ -340,33 +340,6 @@
             margin-bottom: 1rem;
         }
 
-        .star-rating {
-            display: flex;
-            justify-content: center;
-            gap: 0.5rem;
-            margin: 1rem 0;
-        }
-
-        .star {
-            font-size: 2rem;
-            color: #d1d5db;
-            cursor: pointer;
-            transition: color 0.3s;
-        }
-
-        .star:hover, .star.active {
-            color: #fbbf24;
-        }
-
-        .feedback-input {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid var(--border);
-            border-radius: 6px;
-            margin-top: 1rem;
-            font-family: inherit;
-        }
-
         @media (max-width: 768px) {
             .tool-header h1 {
                 font-size: 2rem;
@@ -401,7 +374,7 @@
 
     <div class="container">
         <div class="tool-header">
-            <h1>Quick Voice Analyzer (17:45hs)</h1>
+            <h1>Quick Voice Analyzer</h1>
             <p>Upload a voice recording to get instant acoustic measurements</p>
         </div>
 
@@ -498,16 +471,13 @@
 
         <div class="feedback-section">
             <h3>Help improve this tool</h3>
-            <p style="color: var(--text-light);">How useful was this analysis?</p>
-            <div class="star-rating">
-                <span class="star" data-rating="1">⭐</span>
-                <span class="star" data-rating="2">⭐</span>
-                <span class="star" data-rating="3">⭐</span>
-                <span class="star" data-rating="4">⭐</span>
-                <span class="star" data-rating="5">⭐</span>
-            </div>
-            <input type="text" class="feedback-input" placeholder="What feature would you add? (optional)">
-            <button class="button button-primary" style="margin-top: 1rem;" id="submitFeedbackBtn">Submit Feedback</button>
+            <p style="color: var(--text-light);">Your feedback helps us make VoiceFlow Tools better for clinicians</p>
+            <a href="https://forms.gle/oZvWFGcHwr7VFNRAA" target="_blank" class="button button-primary" style="margin-top: 1.5rem; text-decoration: none; display: inline-block;">
+                📝 Submit Feedback
+            </a>
+            <p style="margin-top: 1rem; font-size: 0.85rem; color: var(--text-light);">
+                Opens in a new tab • Takes less than 1 minute
+            </p>
         </div>
     </div>
 
@@ -730,67 +700,7 @@
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
-        // Star rating and feedback submission
-        let selectedRating = 0;
-
-        document.querySelectorAll('.star').forEach(star => {
-            star.addEventListener('click', function() {
-                selectedRating = parseInt(this.getAttribute('data-rating'));
-                document.querySelectorAll('.star').forEach((s, index) => {
-                    if (index < selectedRating) {
-                        s.classList.add('active');
-                    } else {
-                        s.classList.remove('active');
-                    }
-                });
-            });
-        });
-
-        // Submit feedback
-        document.getElementById('submitFeedbackBtn').addEventListener('click', async function() {
-            if (selectedRating === 0) {
-                alert('Please select a rating before submitting feedback');
-                return;
-            }
-
-            const featureRequest = document.querySelector('.feedback-input').value;
-
-            try {
-                const response = await fetch('https://voice-analyzer-api.onrender.com/feedback', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        rating: selectedRating,
-                        feature_request: featureRequest || null,
-                        user_type: 'clinician',
-                        timestamp: new Date().toISOString()
-                    })
-                });
-
-                if (!response.ok) {
-                    throw new Error('Feedback submission failed');
-                }
-
-                const result = await response.json();
-                console.log('Feedback submitted:', result);
-
-                alert('Thank you for your feedback! Your input helps us improve VoiceFlow Tools.');
-
-                // Reset form
-                selectedRating = 0;
-                document.querySelectorAll('.star').forEach(s => s.classList.remove('active'));
-                document.querySelector('.feedback-input').value = '';
-
-            } catch (error) {
-                console.error('Feedback error:', error);
-                alert('Failed to submit feedback. Please try again later.');
-            }
-        });
-
         console.log('Voice Analyzer loaded successfully');
     </script>
 </body>
 </html>
-<!-- Test deployment 10/10/2025 19:19:29 -->
