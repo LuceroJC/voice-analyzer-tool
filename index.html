@@ -689,8 +689,18 @@
                 }, 100);
                 
                 // Restore button
-                button.textContent = originalText;
-                button.disabled = false;
+                button.textContent = '✅ Downloaded!';
+                button.style.background = 'var(--success)';
+                
+                // Reset button after 2 seconds
+                setTimeout(() => {
+                    button.textContent = originalText;
+                    button.style.background = 'var(--primary)';
+                    button.disabled = false;
+                }, 2000);
+                
+                // Show success message (especially helpful on mobile)
+                alert('✅ PDF report downloaded successfully!');
                 
             } catch (error) {
                 console.error('PDF Error:', error);
@@ -698,11 +708,11 @@
                 
                 // Restore button even on error
                 const button = event.target;
-                button.textContent = '📄 Download PDF Report';
+                button.textContent = originalText;
                 button.disabled = false;
             }
         }
-        
+
         function analyzeAnother() {
             audioPlayer.style.display = 'none';
             resultsSection.style.display = 'none';
