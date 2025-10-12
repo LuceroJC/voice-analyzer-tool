@@ -647,9 +647,11 @@
             }
 
             try {
-                // Update button to show loading state
-                const button = event.target;
+                // Get button reference before async operations
+                const button = document.querySelector('button[onclick="downloadPDF()"]');
                 const originalText = button.textContent;
+                const originalBg = button.style.background;
+                
                 button.textContent = '⏳ Generating PDF...';
                 button.disabled = true;
                 
@@ -660,9 +662,7 @@
                     },
                     body: JSON.stringify({
                         analysis_results: currentAnalysisResults,
-                        patient_info: {
-                            date: new Date().toLocaleDateString()
-                        }
+                        patient_info: null  // Changed to null to avoid showing Patient Information section
                     })
                 });
 
@@ -688,27 +688,24 @@
                     URL.revokeObjectURL(url);
                 }, 100);
                 
-                // Restore button
+                // Show success state
                 button.textContent = '✅ Downloaded!';
-                button.style.background = 'var(--success)';
+                button.style.background = '#10b981';  // Green color
                 
                 // Reset button after 2 seconds
                 setTimeout(() => {
                     button.textContent = originalText;
-                    button.style.background = 'var(--primary)';
+                    button.style.background = originalBg || '';
                     button.disabled = false;
                 }, 2000);
-                
-                // Show success message (especially helpful on mobile)
-                alert('✅ PDF report downloaded successfully!');
                 
             } catch (error) {
                 console.error('PDF Error:', error);
                 alert('Could not generate PDF: ' + error.message);
                 
-                // Restore button even on error
-                const button = event.target;
-                button.textContent = originalText;
+                // Restore button on error
+                const button = document.querySelector('button[onclick="downloadPDF()"]');
+                button.textContent = '📄 Download PDF Report';
                 button.disabled = false;
             }
         }
