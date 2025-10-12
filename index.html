@@ -645,6 +645,8 @@
             alert('No analysis results available. Please analyze a voice recording first.');
             return;
         }
+        
+        const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 
         try {
             // Get button reference before async operations
@@ -678,23 +680,29 @@
             const fileName = `voice_analysis_${new Date().toISOString().slice(0,10)}.pdf`;
             
             // Create and trigger download
-            const url = URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = fileName;
-            link.style.display = 'none';
-            document.body.appendChild(link);
-            
-            // Small delay before clicking (helps on some mobile browsers)
-            setTimeout(() => {
+            if (isMobile) {
+                // On mobile: open in new tab/window (avoids some prompts)
+                const url = URL.createObjectURL(blob);
+                window.open(url, '_blank');
+                
+                setTimeout(() => {
+                    URL.revokeObjectURL(url);
+                }, 1000);
+            } else {
+                // Desktop: direct download
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = fileName;
+                link.style.display = 'none';
+                document.body.appendChild(link);
                 link.click();
                 
-                // Cleanup after download starts
                 setTimeout(() => {
                     document.body.removeChild(link);
                     URL.revokeObjectURL(url);
                 }, 200);
-            }, 100);
+            }
             
             // Show success state
             button.textContent = '✅ Downloaded!';
