@@ -434,6 +434,99 @@
             color: var(--primary);
         }
 
+        .warning-box {
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.1) 0%, rgba(251, 191, 36, 0.1) 100%);
+            border-left: 4px solid var(--warning);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .warning-box p {
+            color: var(--text);
+            line-height: 1.6;
+            margin: 0.5rem 0;
+        }
+
+        .warning-box strong {
+            color: var(--warning);
+        }
+
+        .alert-box {
+            background: rgba(245, 158, 11, 0.1);
+            border: 1px solid var(--warning);
+            border-radius: 8px;
+            padding: 1rem 1.25rem;
+            margin: 1.5rem 0;
+            display: none;
+        }
+
+        .alert-box.show {
+            display: flex;
+            align-items: start;
+            gap: 0.75rem;
+        }
+
+        .alert-icon {
+            font-size: 1.25rem;
+            flex-shrink: 0;
+        }
+
+        .alert-content p {
+            margin: 0;
+            color: var(--text);
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+
+        .alert-content strong {
+            color: var(--warning);
+        }
+
+        .recording-tips {
+            background: var(--white);
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            margin-bottom: 2rem;
+        }
+
+        .recording-tips h3 {
+            color: var(--text);
+            margin-bottom: 1rem;
+            font-size: 1.3rem;
+        }
+
+        .tips-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .tip-item {
+            display: flex;
+            align-items: start;
+            gap: 0.75rem;
+        }
+
+        .tip-icon {
+            font-size: 1.5rem;
+            flex-shrink: 0;
+        }
+
+        .tip-content h4 {
+            font-size: 1rem;
+            margin-bottom: 0.25rem;
+            color: var(--text);
+        }
+
+        .tip-content p {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin: 0;
+        }
+
         .feedback-section {
             background: var(--white);
             border-radius: 12px;
@@ -504,6 +597,10 @@
             .upload-area {
                 padding: 3rem 1.5rem;
             }
+
+            .tips-grid {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
@@ -523,23 +620,69 @@
     <div class="container">
         <div class="tool-header">
             <h1>Voice Analyzer</h1>
-            <p>Upload a voice recording to get instant professional acoustic analysis with detailed measurements and clinical interpretation.</p>
+            <p>Upload a sustained vowel recording to get instant professional acoustic analysis with detailed measurements and clinical interpretation.</p>
         </div>
 
         <div class="info-box">
-            <p><strong>How it works:</strong> Upload any voice recording (sustained vowel, speech sample, or singing). The analyzer will measure fundamental frequency, jitter, shimmer, harmonics-to-noise ratio, and cepstral peak prominence—the gold standard parameters used by voice researchers worldwide.</p>
+            <p><strong>How it works:</strong> Record yourself saying "aahhh" (like at the doctor's office) for 3-5 seconds at a comfortable pitch. The analyzer will measure fundamental frequency, jitter, shimmer, harmonics-to-noise ratio, and cepstral peak prominence—the gold standard parameters for acoustic voice quality assessment.</p>
+        </div>
+
+        <div class="warning-box">
+            <p><strong>⚠️ Important:</strong> Use sustained vowel recordings only (/a/, /i/, or /u/), not running speech or singing. Jitter and shimmer measurements require continuous phonation to be clinically valid.</p>
+            <p style="margin-top: 0.75rem; font-size: 0.95rem;">Note: Files longer than 30 seconds will be automatically trimmed to the first 30 seconds for memory-optimized analysis.</p>
+        </div>
+
+        <div class="recording-tips">
+            <h3>📝 Recording Tips for Best Results</h3>
+            <div class="tips-grid">
+                <div class="tip-item">
+                    <div class="tip-icon">✅</div>
+                    <div class="tip-content">
+                        <h4>What to Record</h4>
+                        <p>Say "aahhh" steadily for 3-5 seconds at your normal speaking pitch</p>
+                    </div>
+                </div>
+                <div class="tip-item">
+                    <div class="tip-icon">🎤</div>
+                    <div class="tip-content">
+                        <h4>Recording Quality</h4>
+                        <p>Quiet room, normal volume, 6-12 inches from microphone</p>
+                    </div>
+                </div>
+                <div class="tip-item">
+                    <div class="tip-icon">🔇</div>
+                    <div class="tip-content">
+                        <h4>What to Avoid</h4>
+                        <p>No speech, singing, pitch changes, or background noise</p>
+                    </div>
+                </div>
+                <div class="tip-item">
+                    <div class="tip-icon">📱</div>
+                    <div class="tip-content">
+                        <h4>Any Device Works</h4>
+                        <p>Phone voice recorder, computer mic, or any recording app</p>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <div class="upload-section">
             <div class="upload-area" id="uploadArea">
-                <div class="upload-icon">📁</div>
-                <h2>Upload Voice Recording</h2>
+                <div class="upload-icon">🎵</div>
+                <h2>Upload Sustained Vowel Recording</h2>
                 <p>Drag & drop your audio file here, or click to browse</p>
                 <p style="margin-top: 1rem; font-size: 0.9rem;">
                     Supports: WAV, MP3, M4A • Maximum file size: 50MB
                 </p>
                 <input type="file" id="fileInput" class="file-input" accept="audio/*">
                 <button class="upload-button">Choose File</button>
+            </div>
+
+            <div class="alert-box" id="durationAlert">
+                <div class="alert-icon">⚠️</div>
+                <div class="alert-content">
+                    <p><strong>File Duration Notice:</strong> Your recording is longer than 30 seconds. The analyzer will use the first 30 seconds for optimal performance and accurate measurements.</p>
+                </div>
             </div>
 
             <div class="audio-player" id="audioPlayer">
@@ -609,6 +752,9 @@
                     <ul class="interpretation-list" id="interpretationList">
                     </ul>
                 </div>
+                <div style="margin-top: 1.5rem; padding: 1rem; background: var(--bg); border-radius: 8px; font-size: 0.9rem; color: var(--text-light);">
+                    <strong>Clinical Note:</strong> These measurements are valid for sustained phonation only. If your recording contained running speech, consonants, or pitch changes, the jitter and shimmer values should not be interpreted clinically.
+                </div>
             </div>
 
             <div class="action-buttons">
@@ -647,6 +793,7 @@
         const analyzeButton = document.getElementById('analyzeButton');
         const loadingSection = document.getElementById('loadingSection');
         const resultsSection = document.getElementById('resultsSection');
+        const durationAlert = document.getElementById('durationAlert');
         
         let audioFile = null;
         let currentAnalysisResults = null;
@@ -695,11 +842,21 @@
             audioFile = file;
             const url = URL.createObjectURL(file);
             audioElement.src = url;
+            
+            // Check duration and show alert if > 30 seconds
+            audioElement.addEventListener('loadedmetadata', function() {
+                if (audioElement.duration > 30) {
+                    durationAlert.classList.add('show');
+                } else {
+                    durationAlert.classList.remove('show');
+                }
+            });
+            
             audioPlayer.style.display = 'block';
             analyzeButton.style.display = 'inline-block';
             
             uploadArea.innerHTML = `
-                <div class="upload-icon">✓</div>
+                <div class="upload-icon">✔</div>
                 <h2>${file.name}</h2>
                 <p style="color: var(--success); font-weight: 600;">File uploaded successfully</p>
                 <button class="upload-button" onclick="document.getElementById('fileInput').click()">Choose Different File</button>
@@ -864,14 +1021,15 @@
         function analyzeAnother() {
             audioPlayer.style.display = 'none';
             resultsSection.style.display = 'none';
+            durationAlert.classList.remove('show');
             audioFile = null;
             currentAnalysisResults = null;
             audioElement.src = '';
             fileInput.value = '';
             
             uploadArea.innerHTML = `
-                <div class="upload-icon">📁</div>
-                <h2>Upload Voice Recording</h2>
+                <div class="upload-icon">🎵</div>
+                <h2>Upload Sustained Vowel Recording</h2>
                 <p>Drag & drop your audio file here, or click to browse</p>
                 <p style="margin-top: 1rem; font-size: 0.9rem;">
                     Supports: WAV, MP3, M4A • Maximum file size: 50MB
