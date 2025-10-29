@@ -58,10 +58,11 @@
             text-decoration: none;
         }
 
-        .nav-links {
-            display: flex;
-            gap: 2rem;
-        }
+  .nav-links {
+    display: flex;
+    gap: 2rem;
+    align-items: center;  /* ADD THIS LINE */
+}
 
         .nav-links a {
             color: var(--text);
@@ -73,6 +74,154 @@
         .nav-links a:hover {
             color: var(--primary);
         }
+
+
+        
+         /* Dropdown Menu */
+        .dropdown {
+            position: relative;
+        }
+
+        .dropdown-toggle {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            cursor: pointer;
+            color: var(--text);
+            font-weight: 500;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            transition: all 0.3s;
+        }
+
+        .dropdown-toggle:hover {
+            background: var(--bg-light);
+            color: var(--primary);
+        }
+
+        .dropdown-arrow {
+            font-size: 0.7rem;
+            transition: transform 0.3s;
+        }
+
+        .dropdown.active .dropdown-arrow {
+            transform: rotate(180deg);
+        }
+
+        .dropdown-menu {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            min-width: 220px;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: all 0.3s;
+            z-index: 1000;
+            margin-top: 0.5rem;
+        }
+
+        .dropdown.active .dropdown-menu {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .dropdown-menu a {
+            display: block;
+            padding: 0.75rem 1.25rem;
+            color: var(--text);
+            text-decoration: none;
+            transition: all 0.3s;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .dropdown-menu a:last-child {
+            border-bottom: none;
+        }
+
+        .dropdown-menu a:hover {
+            background: var(--bg-light);
+            color: var(--primary);
+            padding-left: 1.5rem;
+        }
+
+        .dropdown-menu a:first-child {
+            border-radius: 8px 8px 0 0;
+        }
+
+        .dropdown-menu a:last-child {
+            border-radius: 0 0 8px 8px;
+        }
+
+        /* Mobile Menu */
+        .mobile-menu-toggle {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: var(--text);
+            cursor: pointer;
+            padding: 0.5rem;
+        }
+
+        .mobile-menu {
+            display: none;
+            position: fixed;
+            top: 60px;
+            left: 0;
+            right: 0;
+            background: var(--white);
+            border-bottom: 1px solid var(--border);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            z-index: 999;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+        }
+
+        .mobile-menu.active {
+            max-height: 500px;
+        }
+
+        .mobile-menu nav {
+            padding: 1rem 0;
+        }
+
+        .mobile-menu a {
+            display: block;
+            padding: 0.75rem 40px;
+            color: var(--text);
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+
+        .mobile-menu a:hover {
+            background: var(--bg-light);
+            color: var(--primary);
+            padding-left: 50px;
+        }
+
+        .mobile-tools-section {
+            border-top: 1px solid var(--border);
+            margin-top: 0.5rem;
+            padding-top: 0.5rem;
+        }
+
+        .mobile-tools-header {
+            padding: 0.5rem 40px;
+            color: var(--text-light);
+            font-size: 0.9rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
 
         .container {
             max-width: 1200px;
@@ -467,7 +616,20 @@
             margin: 0.5rem 0;
         }
 
-        @media (max-width: 768px) {
+        @media (max-width: 968px) {
+
+            .nav-links {
+                display: none;
+            }
+
+            .mobile-menu-toggle {
+                display: block;
+            }
+
+            .mobile-menu {
+                display: block;
+            }
+            
             .container {
                 padding: 0 20px;
             }
@@ -508,13 +670,46 @@
     </style>
 </head>
 <body>
-    <header class="header">
+ <header class="header">
         <div class="header-content">
-            <a href="https://phonalab.com" class="logo">🔬 Phonalab</a>
+            <a href="https://www.phonalab.com" class="logo">🔬 Phonalab</a>
+            
             <nav class="nav-links">
-                <a href="https://phonalab.com">Home</a>
-                <a href="https://voice-analyzer-tool.vercel.app">Voice Analyzer</a>
+                <a href="https://www.phonalab.com">Home</a>
+                
+                <div class="dropdown" id="toolsDropdown">
+                    <div class="dropdown-toggle">
+                        <span>Tools</span>
+                        <span class="dropdown-arrow">▼</span>
+                    </div>
+                    <div class="dropdown-menu">
+                        <a href="https://analyzer.phonalab.com">🎤 Voice Analyzer</a>
+                        <a href="https://avqi.phonalab.com">📊 AVQI & ABI</a>
+                        <a href="https://pitch.phonalab.com">🎵 Pitch Visualizer</a>
+                    </div>
+                </div>
+                
                 <a href="https://phonalab.com#about">About</a>
+                <a href="https://forms.gle/oZvWFGcHwr7VFNRAA" target="_blank">Feedback</a>
+            </nav>
+            
+            <button class="mobile-menu-toggle" id="mobileMenuToggle">
+                ☰
+            </button>
+        </div>
+        
+        <div class="mobile-menu" id="mobileMenu">
+            <nav>
+                <a href="https://www.phonalab.com">Home</a>
+                
+                <div class="mobile-tools-section">
+                    <div class="mobile-tools-header">Tools</div>
+                    <a href="https://analyzer.phonalab.com">🎤 Voice Analyzer</a>
+                    <a href="https://avqi.phonalab.com">📊 AVQI & ABI</a>
+                    <a href="https://pitch.phonalab.com">🎵 Pitch Visualizer</a>
+                </div>
+                
+                <a href="#about">About</a>
                 <a href="https://forms.gle/oZvWFGcHwr7VFNRAA" target="_blank">Feedback</a>
             </nav>
         </div>
@@ -594,7 +789,7 @@
                 </div>
 
                 <div class="result-card">
-                    <div class="result-label">Cepstral Peak Prominence</div>
+                    <div class="result-label">Cepstral Peak Prominence Smoothed</div>
                     <div class="result-value" id="cppValue">
                         --<span class="result-unit">dB</span>
                     </div>
