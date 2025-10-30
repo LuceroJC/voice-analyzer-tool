@@ -1079,5 +1079,40 @@
     </script>
     <!-- Vercel Analytics -->
     <script defer src="/_vercel/insights/script.js"></script>
+
+       <script>
+        // Dropdown toggle for desktop
+        const toolsDropdown = document.getElementById('toolsDropdown');
+        const dropdownToggle = toolsDropdown.querySelector('.dropdown-toggle');
+        
+        dropdownToggle.addEventListener('click', (e) => {
+            e.stopPropagation();
+            toolsDropdown.classList.toggle('active');
+        });
+        
+        // Close dropdown when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!toolsDropdown.contains(e.target)) {
+                toolsDropdown.classList.remove('active');
+            }
+        });
+        
+        // Mobile menu toggle
+        const mobileMenuToggle = document.getElementById('mobileMenuToggle');
+        const mobileMenu = document.getElementById('mobileMenu');
+        
+        mobileMenuToggle.addEventListener('click', () => {
+            mobileMenu.classList.toggle('active');
+            mobileMenuToggle.textContent = mobileMenu.classList.contains('active') ? '✕' : '☰';
+        });
+        
+        // Close mobile menu when clicking a link
+        mobileMenu.querySelectorAll('a').forEach(link => {
+            link.addEventListener('click', () => {
+                mobileMenu.classList.remove('active');
+                mobileMenuToggle.textContent = '☰';
+            });
+        });
+    </script>
 </body>
 </html>
