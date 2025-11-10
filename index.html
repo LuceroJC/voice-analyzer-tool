@@ -789,7 +789,7 @@
                 </div>
 
                 <div class="result-card">
-                    <div class="result-label">Cepstral Peak Prominence Smoothed</div>
+                    <div class="result-label">Smoothed Cepstral Peak Prominence</div>
                     <div class="result-value" id="cppValue">
                         --<span class="result-unit">dB</span>
                     </div>
@@ -917,8 +917,17 @@
                     body: formData
                 });
 
+                // Handle different error types
                 if (!response.ok) {
-                    throw new Error('Analysis failed');
+                    const errorData = await response.json();
+                    
+                    // Duration limit error (HTTP 413)
+                    if (response.status === 413 && errorData.detail) {
+                        throw new Error(errorData.detail);
+                    }
+                    
+                    // Generic error
+                    throw new Error(errorData.detail || 'Analysis failed. Please try again.');
                 }
 
                 const data = await response.json();
@@ -926,14 +935,43 @@
                 
             } catch (error) {
                 console.error('Analysis error:', error);
-                alert('Analysis error: ' + error.message);
-            } finally {
+                
+                // Show user-friendly error message
                 loadingSection.style.display = 'none';
+                
+                // Create error display
+                const errorHTML = `
+                    <div style="background: #fee2e2; border: 2px solid #ef4444; border-radius: 8px; padding: 2rem; margin: 2rem 0; text-align: center;">
+                        <div style="font-size: 3rem; margin-bottom: 1rem;">⚠️</div>
+                        <h3 style="color: #991b1b; margin-bottom: 1rem;">Analysis Error</h3>
+                        <p style="color: #7f1d1d; font-size: 1.1rem; margin-bottom: 1rem;">
+                            ${error.message}
+                        </p>
+                        ${error.message.includes('too long') ? `
+                            <div style="background: white; border-radius: 6px; padding: 1rem; margin-top: 1rem; text-align: left;">
+                                <strong style="color: #0369a1;">💡 Recording Tips:</strong>
+                                <ul style="margin: 0.5rem 0; padding-left: 2rem; color: #555;">
+                                    <li>Sustained vowel /a/: 3-5 seconds</li>
+                                    <li>Connected speech: 10-20 seconds</li>
+                                    <li>Use an audio editor to trim your file</li>
+                                </ul>
+                            </div>
+                        ` : ''}
+                        <button onclick="location.reload()" style="margin-top: 1rem; padding: 0.75rem 2rem; background: #6366f1; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 1rem;">
+                            Try Again
+                        </button>
+                    </div>
+                `;
+                
+                resultsSection.innerHTML = errorHTML;
                 resultsSection.style.display = 'block';
+                
+            } finally {
                 analyzeButton.disabled = false;
             }
         }
 
+        
         function displayRealResults(data) {
             currentAnalysisResults = data;
             
