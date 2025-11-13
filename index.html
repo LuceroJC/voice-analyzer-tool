@@ -1029,49 +1029,101 @@
 
         
         function displayRealResults(data) {
+            console.log('Displaying results:', data); // Debug log
             currentAnalysisResults = data;
             
-            document.getElementById('f0Value').innerHTML = 
-                `${data.f0.mean.toFixed(1)}<span class="result-unit">Hz</span>`;
-            document.getElementById('f0Status').textContent = data.f0.status;
-            
-            document.getElementById('jitterValue').innerHTML = 
-                `${data.jitter.percent.toFixed(2)}<span class="result-unit">%</span>`;
-            document.getElementById('jitterStatus').textContent = data.jitter.status;
-            
-            document.getElementById('shimmerValue').innerHTML = 
-                `${data.shimmer.percent.toFixed(2)}<span class="result-unit">%</span>`;
-            document.getElementById('shimmerStatus').textContent = data.shimmer.status;
-            
-            document.getElementById('hnrValue').innerHTML = 
-                `${data.hnr.mean.toFixed(1)}<span class="result-unit">dB</span>`;
-            document.getElementById('hnrStatus').textContent = data.hnr.status;
-            
-            document.getElementById('cppValue').innerHTML = 
-                `${data.cpp.value.toFixed(2)}<span class="result-unit">dB</span>`;
-            document.getElementById('cppStatus').textContent = data.cpp.status;
-            
-            const list = document.getElementById('interpretationList');
-            list.innerHTML = '';
-            
-            const overall = document.createElement('li');
-            overall.textContent = data.interpretation.overall_assessment;
-            list.appendChild(overall);
-            
-            if (data.interpretation.concerns) {
-                data.interpretation.concerns.forEach(concern => {
-                    const li = document.createElement('li');
-                    li.textContent = concern;
-                    list.appendChild(li);
-                });
+            try {
+                // Update all measurement values
+                document.getElementById('f0Value').innerHTML = 
+                    `${data.f0.mean.toFixed(1)}<span class="result-unit">Hz</span>`;
+                document.getElementById('f0Status').textContent = data.f0.status;
+                document.getElementById('f0Status').className = `result-status status-${getStatusClass(data.f0.status)}`;
+                
+                document.getElementById('jitterValue').innerHTML = 
+                    `${data.jitter.percent.toFixed(2)}<span class="result-unit">%</span>`;
+                document.getElementById('jitterStatus').textContent = data.jitter.status;
+                document.getElementById('jitterStatus').className = `result-status status-${getStatusClass(data.jitter.status)}`;
+                
+                document.getElementById('shimmerValue').innerHTML = 
+                    `${data.shimmer.percent.toFixed(2)}<span class="result-unit">%</span>`;
+                document.getElementById('shimmerStatus').textContent = data.shimmer.status;
+                document.getElementById('shimmerStatus').className = `result-status status-${getStatusClass(data.shimmer.status)}`;
+                
+                document.getElementById('hnrValue').innerHTML = 
+                    `${data.hnr.mean.toFixed(1)}<span class="result-unit">dB</span>`;
+                document.getElementById('hnrStatus').textContent = data.hnr.status;
+                document.getElementById('hnrStatus').className = `result-status status-${getStatusClass(data.hnr.status)}`;
+                
+                document.getElementById('cppValue').innerHTML = 
+                    `${data.cpp.value.toFixed(2)}<span class="result-unit">dB</span>`;
+                document.getElementById('cppStatus').textContent = data.cpp.status;
+                document.getElementById('cppStatus').className = `result-status status-${getStatusClass(data.cpp.status)}`;
+                
+                // Handle interpretation - it's a string, not an object
+                const interpretationText = document.getElementById('interpretationText');
+                const list = document.getElementById('interpretationList');
+                
+                if (typeof data.interpretation === 'string') {
+                    // Split interpretation into paragraphs and bullet points
+                    const paragraphs = data.interpretation.split('\n\n');
+                    list.innerHTML = '';
+                    
+                    paragraphs.forEach(para => {
+                        if (para.trim()) {
+                            const li = document.createElement('li');
+                            li.textContent = para.trim();
+                            list.appendChild(li);
+                        }
+                    });
+                } else {
+                    // Fallback for object structure (if API changes back)
+                    list.innerHTML = '';
+                    
+                    if (data.interpretation.overall_assessment) {
+                        const overall = document.createElement('li');
+                        overall.textContent = data.interpretation.overall_assessment;
+                        list.appendChild(overall);
+                    }
+                    
+                    if (data.interpretation.concerns) {
+                        data.interpretation.concerns.forEach(concern => {
+                            const li = document.createElement('li');
+                            li.textContent = concern;
+                            list.appendChild(li);
+                        });
+                    }
+                    
+                    if (data.interpretation.recommendations) {
+                        data.interpretation.recommendations.forEach(rec => {
+                            const li = document.createElement('li');
+                            li.textContent = rec;
+                            list.appendChild(li);
+                        });
+                    }
+                }
+                
+                // Hide loading, show results
+                loadingSection.style.display = 'none';
+                resultsSection.style.display = 'block';
+                
+                // Scroll to results
+                resultsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                
+            } catch (error) {
+                console.error('Error displaying results:', error);
+                alert('Error displaying results. Please try again.');
+                loadingSection.style.display = 'none';
             }
-            
-            if (data.interpretation.recommendations) {
-                data.interpretation.recommendations.forEach(rec => {
-                    const li = document.createElement('li');
-                    li.textContent = rec;
-                    list.appendChild(li);
-                });
+        }
+        
+        function getStatusClass(status) {
+            const statusLower = status.toLowerCase();
+            if (statusLower.includes('normal') || statusLower.includes('within')) {
+                return 'normal';
+            } else if (statusLower.includes('mild') || statusLower.includes('borderline')) {
+                return 'warning';
+            } else {
+                return 'concern';
             }
         }
 
