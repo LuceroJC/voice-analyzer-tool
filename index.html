@@ -968,6 +968,7 @@
                 const formData = new FormData();
                 formData.append('file', audioFile);
 
+                //const response = await fetch('http://localhost:8000/analyze', {
                 const response = await fetch('https://voice-analyzer-api.onrender.com/analyze', {
                     method: 'POST',
                     body: formData
@@ -1028,8 +1029,10 @@
         }
 
         
-            function displayRealResults(data) {
-            console.log('Displaying results:', data); // Debug log
+// Replace the displayRealResults function in your index.html with this:
+
+        function displayRealResults(data) {
+            console.log('Displaying results:', data);
             currentAnalysisResults = data;
             
             try {
@@ -1059,47 +1062,65 @@
                 document.getElementById('cppStatus').textContent = data.cpp.status;
                 document.getElementById('cppStatus').className = `result-status status-${getStatusClass(data.cpp.status)}`;
                 
-                // Handle interpretation - it's a string, not an object
-                const interpretationText = document.getElementById('interpretationText');
+                // Handle interpretation - API returns structured object
                 const list = document.getElementById('interpretationList');
+                list.innerHTML = '';
                 
-                if (typeof data.interpretation === 'string') {
-                    // Split interpretation into paragraphs and bullet points
-                    const paragraphs = data.interpretation.split('\n\n');
-                    list.innerHTML = '';
-                    
-                    paragraphs.forEach(para => {
-                        if (para.trim()) {
+                const interp = data.interpretation;
+                
+                // Overall assessment
+                if (interp.overall_assessment) {
+                    const li = document.createElement('li');
+                    li.innerHTML = `<strong>Overall:</strong> ${interp.overall_assessment}`;
+                    list.appendChild(li);
+                }
+                
+                // Severity level
+                if (interp.severity) {
+                    const li = document.createElement('li');
+                    const severityColors = {
+                        'normal': '#10b981',
+                        'mild': '#f59e0b', 
+                        'moderate': '#f97316',
+                        'severe': '#ef4444'
+                    };
+                    const color = severityColors[interp.severity] || '#6b7280';
+                    li.innerHTML = `<strong>Severity:</strong> <span style="color: ${color}; font-weight: 600; text-transform: capitalize;">${interp.severity}</span>`;
+                    list.appendChild(li);
+                }
+                
+                // Concerns
+                if (interp.concerns && interp.concerns.length > 0) {
+                    interp.concerns.forEach(concern => {
+                        if (concern && concern !== "None" && concern !== "No significant concerns detected") {
                             const li = document.createElement('li');
-                            li.textContent = para.trim();
+                            li.innerHTML = `<strong>Concern:</strong> ${concern}`;
                             list.appendChild(li);
                         }
                     });
-                } else {
-                    // Fallback for object structure (if API changes back)
-                    list.innerHTML = '';
-                    
-                    if (data.interpretation.overall_assessment) {
-                        const overall = document.createElement('li');
-                        overall.textContent = data.interpretation.overall_assessment;
-                        list.appendChild(overall);
-                    }
-                    
-                    if (data.interpretation.concerns) {
-                        data.interpretation.concerns.forEach(concern => {
-                            const li = document.createElement('li');
-                            li.textContent = concern;
-                            list.appendChild(li);
-                        });
-                    }
-                    
-                    if (data.interpretation.recommendations) {
-                        data.interpretation.recommendations.forEach(rec => {
-                            const li = document.createElement('li');
-                            li.textContent = rec;
-                            list.appendChild(li);
-                        });
-                    }
+                }
+                
+                // Recommendations
+                if (interp.recommendations && interp.recommendations.length > 0) {
+                    interp.recommendations.forEach(rec => {
+                        const li = document.createElement('li');
+                        li.innerHTML = `<strong>Recommendation:</strong> ${rec}`;
+                        list.appendChild(li);
+                    });
+                }
+                
+                // Clinical action
+                if (interp.clinical_action && interp.clinical_action !== "None needed") {
+                    const li = document.createElement('li');
+                    li.innerHTML = `<strong>Suggested Action:</strong> ${interp.clinical_action}`;
+                    list.appendChild(li);
+                }
+                
+                // If no items were added, show a default message
+                if (list.children.length === 0) {
+                    const li = document.createElement('li');
+                    li.textContent = 'Voice parameters within normal limits. No concerns identified.';
+                    list.appendChild(li);
                 }
                 
                 // Hide loading, show results
@@ -1115,12 +1136,12 @@
                 loadingSection.style.display = 'none';
             }
         }
-        
+
         function getStatusClass(status) {
             const statusLower = status.toLowerCase();
-            if (statusLower.includes('normal') || statusLower.includes('within')) {
+            if (statusLower.includes('normal') || statusLower.includes('good') || statusLower.includes('within')) {
                 return 'normal';
-            } else if (statusLower.includes('mild') || statusLower.includes('borderline')) {
+            } else if (statusLower.includes('mild') || statusLower.includes('borderline') || statusLower.includes('slightly')) {
                 return 'warning';
             } else {
                 return 'concern';
