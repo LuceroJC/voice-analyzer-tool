@@ -785,6 +785,19 @@
             <p><strong>How it works:</strong> Upload any voice recording (sustained vowel, speech sample, or singing). The analyzer will measure fundamental frequency, jitter, shimmer, harmonics-to-noise ratio, and cepstral peak prominence—the gold standard parameters used by voice researchers worldwide.</p>
         </div>
 
+        <div class="disclaimer-banner" style="
+    background: #fef3c7; 
+    border: 1px solid #f59e0b; 
+    border-radius: 8px; 
+    padding: 1rem; 
+    margin-bottom: 1.5rem;
+    font-size: 0.9rem;
+">
+    <strong>⚠️ Important:</strong> This tool provides objective acoustic measurements only. 
+    It does not provide medical advice, diagnosis, or treatment recommendations. 
+    Results should be interpreted by a qualified speech-language pathologist or physician.
+</div>
+
         <div class="upload-section">
             <div class="upload-area" id="uploadArea">
                 <div class="upload-icon">📁</div>
@@ -858,7 +871,7 @@
             </div>
 
             <div class="interpretation">
-                <h2>Clinical Interpretation</h2>
+              <h2>Acoustic Observations</h2>
                 <div class="interpretation-text" id="interpretationText">
                     <p>Analysis complete. Based on the acoustic parameters:</p>
                     <ul class="interpretation-list" id="interpretationList">
@@ -1094,36 +1107,23 @@
                 }
                 
                 // Concerns
-                if (interp.concerns && interp.concerns.length > 0) {
-                    interp.concerns.forEach(concern => {
-                        if (concern && concern !== "None" && concern !== "No significant concerns detected") {
-                            const li = document.createElement('li');
-                            li.innerHTML = `<strong>Concern:</strong> ${concern}`;
-                            list.appendChild(li);
-                        }
-                    });
+                if (interp.summary) {
+                    const li = document.createElement('li');
+                    li.innerHTML = `<strong>Summary:</strong> ${interp.summary}`;
+                    list.appendChild(li);
                 }
-                
-                // Recommendations
-                if (interp.recommendations && interp.recommendations.length > 0) {
-                    interp.recommendations.forEach(rec => {
+                if (interp.observations && interp.observations.length > 0) {
+                    interp.observations.forEach(obs => {
                         const li = document.createElement('li');
-                        li.innerHTML = `<strong>Recommendation:</strong> ${rec}`;
+                        li.textContent = obs;
                         list.appendChild(li);
                     });
-                }
-                
-                // Clinical action
-                if (interp.clinical_action && interp.clinical_action !== "None needed") {
-                    const li = document.createElement('li');
-                    li.innerHTML = `<strong>Suggested Action:</strong> ${interp.clinical_action}`;
-                    list.appendChild(li);
                 }
                 
                 // If no items were added, show a default message
                 if (list.children.length === 0) {
                     const li = document.createElement('li');
-                    li.textContent = 'Voice parameters within normal limits. No concerns identified.';
+                    li.textContent = 'Voice parameters within normal limits.';
                     list.appendChild(li);
                 }
                 
